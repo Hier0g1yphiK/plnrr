@@ -287,7 +287,7 @@ describe('Persistence Layer', () => {
 
       // Before debounce fires, no localStorage writes (beyond initial availability check)
       const setItemCalls = (mockStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.filter(
-        ([key]: [string]) => key === testConfig.key
+        (args: unknown[]) => args[0] === testConfig.key
       );
       expect(setItemCalls).toHaveLength(0);
 
@@ -298,7 +298,7 @@ describe('Persistence Layer', () => {
 
       // Only one write should have occurred for the final state
       const setItemCallsAfter = (mockStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.filter(
-        ([key]: [string]) => key === testConfig.key
+        (args: unknown[]) => args[0] === testConfig.key
       );
       expect(setItemCallsAfter).toHaveLength(1);
 
@@ -330,7 +330,7 @@ describe('Persistence Layer', () => {
       });
 
       const setItemCalls = (mockStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.filter(
-        ([key]: [string]) => key === testConfig.key
+        (args: unknown[]) => args[0] === testConfig.key
       );
       expect(setItemCalls).toHaveLength(0);
 
@@ -340,7 +340,7 @@ describe('Persistence Layer', () => {
       });
 
       const setItemCallsAfter = (mockStorage.setItem as ReturnType<typeof vi.fn>).mock.calls.filter(
-        ([key]: [string]) => key === testConfig.key
+        (args: unknown[]) => args[0] === testConfig.key
       );
       expect(setItemCallsAfter).toHaveLength(1);
     });

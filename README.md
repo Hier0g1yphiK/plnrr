@@ -29,8 +29,34 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in the values. See the example file for descriptions of each variable.
+
+Required variables:
+- `DATABASE_URL` — Pooled Postgres connection string (Neon)
+- `DIRECT_URL` — Non-pooled Postgres connection string (Neon)
+- `AUTH_SECRET` — Auth.js signing secret
+- `AUTH_GOOGLE_ID` — Google OAuth client ID
+- `AUTH_GOOGLE_SECRET` — Google OAuth client secret
+- `ALLOWED_EMAILS` — Comma-separated list of approved email addresses
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+### Database Migrations
+
+Prisma Migrate must run against the non-pooled connection (`DIRECT_URL`), not the pooled `DATABASE_URL`. Neon's connection pooler does not support the advisory locks that Prisma Migrate requires.
+
+In your deploy script or CI pipeline:
+
+```bash
+DATABASE_URL=$DIRECT_URL npx prisma migrate deploy
+```
+
+### Environment Setup
+
+Set all variables from `.env.example` in your Vercel project under Settings > Environment Variables. They are injected at deploy time.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

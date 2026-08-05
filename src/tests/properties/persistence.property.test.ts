@@ -45,6 +45,7 @@ const arbChecklistItem = (categoryIds: string[]) =>
     id: arbId(),
     text: fc.string({ minLength: 1, maxLength: 200 }),
     categoryId: fc.constantFrom(...categoryIds),
+    minutesBefore: fc.option(fc.nat({ max: 1440 }), { nil: null }),
   });
 
 const arbTemplate = () =>
@@ -77,12 +78,14 @@ const arbActiveChecklistItem = () =>
     text: fc.string({ minLength: 1, maxLength: 200 }),
     categoryId: arbId(),
     checked: fc.boolean(),
+    minutesBefore: fc.option(fc.nat({ max: 1440 }), { nil: null }),
   });
 
 const arbActiveChecklist = () =>
   fc.record({
     templateId: arbId(),
     items: fc.array(arbActiveChecklistItem(), { minLength: 0, maxLength: 50 }),
+    streamTime: fc.option(fc.string({ minLength: 1, maxLength: 20 }), { nil: null }),
   });
 
 const arbChecklistState = () =>
@@ -185,7 +188,7 @@ const arbUnknownFields = (excludeKeys: string[] = []) =>
 // Known top-level keys for each schema to avoid generating overlapping unknown fields
 const CHECKLIST_STATE_KEYS = ['version', 'templates', 'activeChecklist'];
 const ORGANIZER_STATE_KEYS = ['version', 'tasks'];
-const TEMPLATE_KEYS = ['id', 'name', 'categories', 'items', 'createdAt'];
+const TEMPLATE_KEYS = ['id', 'name', 'categories', 'items', 'createdAt', 'minutesBefore', 'streamTime'];
 const TASK_CARD_KEYS = ['id', 'title', 'weekday', 'typeTag', 'completed', 'recurring', 'createdAt'];
 
 describe('Property 10: Schema Migration Forward-Compatibility', () => {

@@ -2,10 +2,13 @@
 
 import { createContext, useContext, type ReactNode, type Dispatch } from 'react';
 import { nanoid } from 'nanoid';
-import { usePersistedReducer, type PersistenceError } from '@/lib/persistence';
+import {
+  useServerPersistedReducer,
+  type PersistenceError,
+} from '@/lib/use-server-persisted-reducer';
 import { checklistReducer, type ChecklistAction } from '@/lib/checklist-reducer';
-import { ChecklistStateSchema } from '@/lib/schemas';
-import { createMigrateFn, checklistMigrations } from '@/lib/migrations';
+import { loadUserData, saveChecklistState } from '@/lib/actions';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import type { ChecklistState, Template, Category } from '@/lib/types';
 
 interface ChecklistContextValue {
@@ -48,7 +51,7 @@ function ensureOtherCategory(template: Template): Template {
 }
 
 /**
- * Recovery logic applied during state initialization.
+ * Recovery logic applied after loading state from the server.
  * Checks each template for presence of "Other" category and recreates it if missing.
  */
 function recoverChecklistState(state: ChecklistState): ChecklistState {
@@ -66,17 +69,21 @@ function recoverChecklistState(state: ChecklistState): ChecklistState {
 }
 
 export function ChecklistProvider({ children }: { children: ReactNode }) {
-  const { state, dispatch, error } = usePersistedReducer(
+  const { state, dispatch, error, loading } = useServerPersistedReducer(
     checklistReducer,
     DEFAULT_CHECKLIST_STATE,
     {
-      key: 'plnrr:checklist',
-      version: checklistMigrations.currentVersion,
-      schema: ChecklistStateSchema,
-      migrate: createMigrateFn(checklistMigrations),
-    },
-    recoverChecklistState
+      saveFn: (s: ChecklistState) => saveChecklistState(s),
+      loadFn: async () => {
+        const data = await loadUserData();
+        return recoverChecklistState(data.checklistState);
+      },
+    }
   );
+
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <ChecklistContext value={{ state, dispatch, error }}>

@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// === Auth.js Required Models ===
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // Application data
+  checklistTemplates ChecklistTemplate[]
+  activeChecklist    ActiveChecklist?
+  taskCards          TaskCard[]
+  importCompleted    Boolean @default(false)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// === Application Models ===
+
+model ChecklistTemplate {
+  id         String   @id @default(cuid())
+  name       String   @db.VarChar(100)
+  nameLower  String   @db.VarChar(100)
+  createdAt  DateTime @default(now())
+  userId     String
+
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories ChecklistCategory[]
+  items      ChecklistItem[]
+  activeChecklist ActiveChecklist?
+
+  @@unique([userId, nameLower], map: "checklist_template_user_name_ci_unique")
+}
+
+model ChecklistCategory {
+  id         String @id @default(cuid())
+  name       String @db.VarChar(50)
+  order      Int
+  templateId String
+
+  template ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  items    ChecklistItem[]
+}
+
+model ChecklistItem {
+  id            String  @id @default(cuid())
+  text          String  @db.VarChar(200)
+  minutesBefore Int?
+  templateId    String
+  categoryId    String
+
+  template ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  category ChecklistCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model ActiveChecklist {
+  id         String  @id @default(cuid())
+  userId     String  @unique
+  templateId String  @unique
+  streamTime String?
+  items      Json
+
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+}
+
+model TaskCard {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(100)
+  weekday   String
+  typeTag   String?
+  completed Boolean  @default(false)
+  recurring Boolean  @default(false)
+  createdAt DateTime @default(now())
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

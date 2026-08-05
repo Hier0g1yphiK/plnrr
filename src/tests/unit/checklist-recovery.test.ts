@@ -1,63 +1,61 @@
 /**
  * Unit tests for "Other" category recovery on load
  * Validates: Requirements 2.8
+ *
+ * The ChecklistProvider now uses server-backed persistence (useServerPersistedReducer).
+ * We mock the server actions (loadUserData, saveChecklistState) to return test data
+ * and verify that the recovery logic (ensureOtherCategory) still runs on loaded state.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
+
+// Mock the server actions module before importing the context
+vi.mock('@/lib/actions', () => ({
+  loadUserData: vi.fn(),
+  saveChecklistState: vi.fn().mockResolvedValue({}),
+}));
+
 import { ChecklistProvider, useChecklist } from '@/lib/checklist-context';
+import { loadUserData } from '@/lib/actions';
+
+const mockLoadUserData = loadUserData as ReturnType<typeof vi.fn>;
 
 // === Test Helpers ===
-
-function createStorageMock(data: Record<string, string> = {}): Storage {
-  const store: Record<string, string> = { ...data };
-  return {
-    getItem: vi.fn((key: string) => store[key] ?? null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: vi.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      Object.keys(store).forEach((key) => delete store[key]);
-    }),
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
-  };
-}
 
 function wrapper({ children }: { children: React.ReactNode }) {
   return React.createElement(ChecklistProvider, null, children);
 }
 
+function makeLoadResponse(templates: any[], activeChecklist: any = null) {
+  return {
+    checklistState: {
+      version: 2,
+      templates,
+      activeChecklist,
+    },
+    organizerState: {
+      version: 1,
+      tasks: [],
+    },
+  };
+}
+
 // === Tests ===
 
 describe('Other category recovery on load', () => {
-  let originalLocalStorage: Storage;
-
   beforeEach(() => {
-    originalLocalStorage = window.localStorage;
-    vi.useFakeTimers();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    Object.defineProperty(window, 'localStorage', {
-      value: originalLocalStorage,
-      writable: true,
-      configurable: true,
-    });
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  it('recreates "Other" category when missing from a template', () => {
+  it('recreates "Other" category when missing from a template', async () => {
     // Template stored without "Other" category (simulates data corruption)
-    const storedState = {
-      version: 1,
-      templates: [
+    mockLoadUserData.mockResolvedValue(
+      makeLoadResponse([
         {
           id: 'template-1',
           name: 'My Template',
@@ -66,25 +64,18 @@ describe('Other category recovery on load', () => {
             { id: 'cat-2', name: 'Physical Setup', order: 1 },
           ],
           items: [
-            { id: 'item-1', text: 'Start OBS', categoryId: 'cat-1' },
+            { id: 'item-1', text: 'Start OBS', categoryId: 'cat-1', minutesBefore: null },
           ],
           createdAt: '2024-01-01T00:00:00.000Z',
         },
-      ],
-      activeChecklist: null,
-    };
-
-    const mockStorage = createStorageMock({
-      'plnrr:checklist': JSON.stringify(storedState),
-    });
-
-    Object.defineProperty(window, 'localStorage', {
-      value: mockStorage,
-      writable: true,
-      configurable: true,
-    });
+      ])
+    );
 
     const { result } = renderHook(() => useChecklist(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.state.templates).toHaveLength(1);
+    });
 
     const template = result.current.state.templates[0];
     expect(template.categories).toHaveLength(3); // Software, Physical Setup, + recovered Other
@@ -93,10 +84,9 @@ describe('Other category recovery on load', () => {
     expect(otherCategory!.order).toBe(2); // max(0,1) + 1 = 2
   });
 
-  it('does not modify templates that already have "Other" category', () => {
-    const storedState = {
-      version: 1,
-      templates: [
+  it('does not modify templates that already have "Other" category', async () => {
+    mockLoadUserData.mockResolvedValue(
+      makeLoadResponse([
         {
           id: 'template-1',
           name: 'My Template',
@@ -107,21 +97,14 @@ describe('Other category recovery on load', () => {
           items: [],
           createdAt: '2024-01-01T00:00:00.000Z',
         },
-      ],
-      activeChecklist: null,
-    };
-
-    const mockStorage = createStorageMock({
-      'plnrr:checklist': JSON.stringify(storedState),
-    });
-
-    Object.defineProperty(window, 'localStorage', {
-      value: mockStorage,
-      writable: true,
-      configurable: true,
-    });
+      ])
+    );
 
     const { result } = renderHook(() => useChecklist(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.state.templates).toHaveLength(1);
+    });
 
     const template = result.current.state.templates[0];
     expect(template.categories).toHaveLength(2);
@@ -129,10 +112,9 @@ describe('Other category recovery on load', () => {
     expect(template.categories[1].name).toBe('Other');
   });
 
-  it('recovers "Other" for multiple templates independently', () => {
-    const storedState = {
-      version: 1,
-      templates: [
+  it('recovers "Other" for multiple templates independently', async () => {
+    mockLoadUserData.mockResolvedValue(
+      makeLoadResponse([
         {
           id: 'template-1',
           name: 'Template A',
@@ -163,21 +145,14 @@ describe('Other category recovery on load', () => {
           items: [],
           createdAt: '2024-01-03T00:00:00.000Z',
         },
-      ],
-      activeChecklist: null,
-    };
-
-    const mockStorage = createStorageMock({
-      'plnrr:checklist': JSON.stringify(storedState),
-    });
-
-    Object.defineProperty(window, 'localStorage', {
-      value: mockStorage,
-      writable: true,
-      configurable: true,
-    });
+      ])
+    );
 
     const { result } = renderHook(() => useChecklist(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.state.templates).toHaveLength(3);
+    });
 
     // Template A: missing Other → recovered
     const templateA = result.current.state.templates[0];
@@ -197,10 +172,9 @@ describe('Other category recovery on load', () => {
     expect(otherC!.order).toBe(3); // max(0,1,2) + 1 = 3
   });
 
-  it('handles template with no categories by creating "Other" with order 0', () => {
-    const storedState = {
-      version: 1,
-      templates: [
+  it('handles template with no categories by creating "Other" with order 0', async () => {
+    mockLoadUserData.mockResolvedValue(
+      makeLoadResponse([
         {
           id: 'template-1',
           name: 'Empty Template',
@@ -208,21 +182,14 @@ describe('Other category recovery on load', () => {
           items: [],
           createdAt: '2024-01-01T00:00:00.000Z',
         },
-      ],
-      activeChecklist: null,
-    };
-
-    const mockStorage = createStorageMock({
-      'plnrr:checklist': JSON.stringify(storedState),
-    });
-
-    Object.defineProperty(window, 'localStorage', {
-      value: mockStorage,
-      writable: true,
-      configurable: true,
-    });
+      ])
+    );
 
     const { result } = renderHook(() => useChecklist(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.state.templates).toHaveLength(1);
+    });
 
     const template = result.current.state.templates[0];
     expect(template.categories).toHaveLength(1);

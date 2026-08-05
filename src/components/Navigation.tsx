@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useTheme } from '@/lib/theme-context';
+import { useToast } from '@/lib/toast-context';
+import { formatUserDisplay } from '@/lib/user-display';
 import type { ThemeName } from '@/lib/types';
 
 export type ActiveTab = 'checklist' | 'weekly';
@@ -176,8 +179,49 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
         </div>
       </div>
 
-      {/* Theme picker */}
-      <ThemePicker />
+      {/* Session UI + Theme picker */}
+      <div className="flex items-center gap-3">
+        <SessionUI />
+        <ThemePicker />
+      </div>
     </nav>
+  );
+}
+
+// === Session UI ===
+
+function SessionUI() {
+  const { data: session } = useSession();
+  const { addToast } = useToast();
+  const [signingOut, setSigningOut] = useState(false);
+
+  if (!session?.user) return null;
+
+  const displayName = formatUserDisplay(session.user.name, session.user.email);
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut({ callbackUrl: '/auth/signin' });
+    } catch {
+      addToast('Sign-out failed. Please try again.', 'warning');
+      setSigningOut(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-theme-text-muted truncate max-w-[180px]" title={session.user.name || session.user.email || undefined}>
+        {displayName}
+      </span>
+      <button
+        onClick={handleSignOut}
+        disabled={signingOut}
+        className="min-h-[36px] px-3 py-1.5 text-xs font-medium rounded-lg border border-theme-border text-theme-text-muted hover:text-theme-text hover:border-theme-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label="Sign out"
+      >
+        {signingOut ? 'Signing out…' : 'Sign out'}
+      </button>
+    </div>
   );
 }

@@ -2,16 +2,18 @@
 
 import { createContext, useContext, useEffect, useRef, type ReactNode, type Dispatch } from 'react';
 import {
-  usePersistedReducer,
+  useServerPersistedReducer,
+  type PersistenceError,
+} from '@/lib/use-server-persisted-reducer';
+import {
   readStorageValue,
   writeStorageValue,
   STORAGE_KEYS,
-  type PersistenceError,
 } from '@/lib/persistence';
 import { organizerReducer, type OrganizerAction } from '@/lib/organizer-reducer';
-import { OrganizerStateSchema } from '@/lib/schemas';
-import { createMigrateFn, organizerMigrations } from '@/lib/migrations';
+import { loadUserData, saveOrganizerState } from '@/lib/actions';
 import { shouldResetRecurringTasks, resetRecurringTasks } from '@/lib/recurrence';
+import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 import type { OrganizerState } from '@/lib/types';
 
 interface OrganizerContextValue {
@@ -44,20 +46,22 @@ function organizerReducerWithReset(
 }
 
 export function OrganizerProvider({ children }: { children: ReactNode }) {
-  const { state, dispatch, error } = usePersistedReducer(
+  const { state, dispatch, error, loading } = useServerPersistedReducer(
     organizerReducerWithReset,
     DEFAULT_ORGANIZER_STATE,
     {
-      key: 'plnrr:organizer',
-      version: organizerMigrations.currentVersion,
-      schema: OrganizerStateSchema,
-      migrate: createMigrateFn(organizerMigrations),
+      saveFn: (s: OrganizerState) => saveOrganizerState(s),
+      loadFn: async () => {
+        const data = await loadUserData();
+        return data.organizerState;
+      },
     }
   );
 
   const hasCheckedReset = useRef(false);
 
   useEffect(() => {
+    if (loading) return;
     if (hasCheckedReset.current) return;
     hasCheckedReset.current = true;
 
@@ -66,7 +70,11 @@ export function OrganizerProvider({ children }: { children: ReactNode }) {
       (dispatch as Dispatch<InternalOrganizerAction>)({ type: '__RESET_RECURRING' });
       writeStorageValue(STORAGE_KEYS.lastReset, new Date().toISOString());
     }
-  }, [dispatch]);
+  }, [dispatch, loading]);
+
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <OrganizerContext value={{ state, dispatch: dispatch as Dispatch<OrganizerAction>, error }}>
