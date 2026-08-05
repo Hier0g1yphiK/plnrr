@@ -71,11 +71,6 @@ function isTimezoneAvailable(): boolean {
   }
 }
 
-function truncateTitle(title: string, maxLength: number): string {
-  if (title.length <= maxLength) return title;
-  return title.slice(0, maxLength) + '…';
-}
-
 // === Sub-components ===
 
 function TodayFilterToggle({
@@ -96,8 +91,8 @@ function TodayFilterToggle({
         disabled={disabled}
         className={`min-w-[44px] min-h-[44px] inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-body font-medium transition-colors ${
           isActive
-            ? 'bg-lavender-500 text-white shadow-md'
-            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+            ? 'bg-theme-accent text-theme-accent-text shadow-md'
+            : 'bg-theme-surface-alt text-theme-text-muted hover:bg-theme-border-subtle'
         } disabled:opacity-50 disabled:cursor-not-allowed`}
         aria-label={isActive ? 'Show all days' : 'Show today only'}
         aria-pressed={isActive}
@@ -129,14 +124,14 @@ function TodayFilterToggle({
 function EmptyState({ onAddTask }: { onAddTask: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="w-16 h-16 rounded-full bg-lavender-100 dark:bg-lavender-900 flex items-center justify-center mb-4">
+      <div className="w-16 h-16 rounded-full bg-theme-accent-subtle flex items-center justify-center mb-4">
         <svg
           width="32"
           height="32"
           viewBox="0 0 24 24"
           fill="none"
           aria-hidden="true"
-          className="text-lavender-500 dark:text-lavender-300"
+          className="text-theme-accent"
         >
           <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
           <path d="M3 8H21" stroke="currentColor" strokeWidth="1.5" />
@@ -144,15 +139,15 @@ function EmptyState({ onAddTask }: { onAddTask: () => void }) {
           <path d="M16 2V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </div>
-      <h3 className="font-display text-lg font-semibold text-zinc-800 dark:text-zinc-100 mb-2">
+      <h3 className="font-display text-lg font-semibold text-theme-text mb-2">
         No tasks yet
       </h3>
-      <p className="text-sm font-body text-zinc-500 dark:text-zinc-400 mb-6 max-w-sm">
+      <p className="text-sm font-body text-theme-text-muted mb-6 max-w-sm">
         Start planning your week by adding tasks to any day column below.
       </p>
       <button
         onClick={onAddTask}
-        className="min-w-[44px] min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-lavender-500 hover:bg-lavender-600 text-white font-body font-medium text-sm transition-colors"
+        className="min-w-[44px] min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-body font-medium text-sm transition-colors"
         aria-label="Add your first task"
       >
         <svg
@@ -212,8 +207,8 @@ function MobileDayNav({
           onKeyDown={(e) => handleKeyDown(e, day)}
           className={`min-w-[44px] min-h-[44px] flex-shrink-0 px-3 py-2 rounded-lg text-sm font-body font-medium transition-colors ${
             selectedDay === day
-              ? 'bg-lavender-500 text-white'
-              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+              ? 'bg-theme-accent text-theme-accent-text'
+              : 'bg-theme-surface-alt text-theme-text-muted hover:bg-theme-border-subtle'
           }`}
           aria-selected={selectedDay === day}
           role="tab"
@@ -236,6 +231,7 @@ export function OrganizerView() {
   const [mobileSelectedDay, setMobileSelectedDay] = useState<Weekday>(
     getCurrentWeekday() ?? 'monday'
   );
+  const [showDayColumns, setShowDayColumns] = useState(false);
 
   const timezoneAvailable = isTimezoneAvailable();
   const currentWeekday = getCurrentWeekday();
@@ -287,19 +283,19 @@ export function OrganizerView() {
   }
 
   function handleEmptyStateCTA() {
-    // Focus first day (monday) on desktop, or current day on mobile
+    setShowDayColumns(true);
     if (currentWeekday) {
       setMobileSelectedDay(currentWeekday);
     }
   }
 
   // Empty state
-  if (totalTaskCount === 0 && !todayFilterActive) {
+  if (totalTaskCount === 0 && !todayFilterActive && !showDayColumns) {
     return (
       <div className="w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-xl font-bold text-zinc-800 dark:text-zinc-100">
+          <h2 className="font-display text-xl font-bold text-theme-text">
             Weekly Organizer
           </h2>
           <TodayFilterToggle
@@ -318,7 +314,7 @@ export function OrganizerView() {
     <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-xl font-bold text-zinc-800 dark:text-zinc-100">
+        <h2 className="font-display text-xl font-bold text-theme-text">
           Weekly Organizer
         </h2>
         <TodayFilterToggle
@@ -332,41 +328,23 @@ export function OrganizerView() {
       {/* Today filter empty state */}
       {todayFilterActive && currentWeekday && tasksByDay[currentWeekday].length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-sm font-body text-zinc-500 dark:text-zinc-400 mb-2">
+          <p className="text-sm font-body text-theme-text-muted mb-2">
             No tasks scheduled for {FULL_LABELS[currentWeekday]}.
           </p>
-          <p className="text-xs font-body text-zinc-400 dark:text-zinc-500">
+          <p className="text-xs font-body text-theme-text-faint">
             Add a task below or deactivate the Today filter to see all days.
           </p>
         </div>
       )}
 
-      {/* Desktop: Full 7-day grid (≥1024px) */}
-      <div className="hidden lg:grid lg:grid-cols-7 gap-3">
+      {/* Desktop/Tablet: 2-column card grid (≥768px), centered when single day */}
+      <div className={`hidden md:grid gap-4 ${visibleDays.length === 1 ? 'md:grid-cols-1 max-w-md mx-auto' : 'md:grid-cols-2'}`}>
         {visibleDays.map((day) => (
           <DayColumn
             key={day}
             weekday={day}
             label={FULL_LABELS[day]}
             tasks={tasksByDay[day]}
-            onAddTask={handleAddTask(day)}
-            onToggleComplete={handleToggleComplete}
-            onDeleteTask={handleDeleteTask}
-          />
-        ))}
-      </div>
-
-      {/* Tablet: Condensed 7-day grid (768–1023px) */}
-      <div className="hidden md:grid md:grid-cols-7 lg:hidden gap-2">
-        {visibleDays.map((day) => (
-          <DayColumn
-            key={day}
-            weekday={day}
-            label={ABBREVIATED_LABELS[day]}
-            tasks={tasksByDay[day].map((task) => ({
-              ...task,
-              title: truncateTitle(task.title, 40),
-            }))}
             onAddTask={handleAddTask(day)}
             onToggleComplete={handleToggleComplete}
             onDeleteTask={handleDeleteTask}

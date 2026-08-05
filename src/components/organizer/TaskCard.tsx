@@ -170,8 +170,8 @@ export function TaskCard({ task }: TaskCardProps) {
     <div
       className={`group rounded-lg border p-3 transition-opacity ${
         task.completed
-          ? 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 opacity-60'
-          : 'border-zinc-200 dark:border-lavender-800 bg-white dark:bg-lavender-950'
+          ? 'border-theme-border bg-theme-surface-alt opacity-60'
+          : 'border-theme-border bg-theme-surface'
       }`}
       role="article"
       aria-label={`Task: ${task.title}`}
@@ -184,7 +184,7 @@ export function TaskCard({ task }: TaskCardProps) {
           className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md shrink-0 transition-colors ${
             task.completed
               ? 'bg-mint-500 dark:bg-mint-600 text-white'
-              : 'border-2 border-zinc-300 dark:border-zinc-600 text-transparent hover:border-mint-400 dark:hover:border-mint-400'
+              : 'border-2 border-theme-border text-transparent hover:border-mint-400 dark:hover:border-mint-400'
           }`}
           aria-label={task.completed ? 'Mark task as incomplete' : 'Mark task as complete'}
           aria-checked={task.completed}
@@ -202,17 +202,17 @@ export function TaskCard({ task }: TaskCardProps) {
             onChange={(e) => setEditTitle(e.target.value)}
             onBlur={handleTitleSave}
             onKeyDown={handleTitleKeyDown}
-            className="flex-1 min-h-[44px] px-2 py-1 rounded-md bg-zinc-100 dark:bg-lavender-900 text-zinc-900 dark:text-zinc-100 text-sm font-body outline-none ring-2 ring-lavender-400"
+            className="flex-1 min-h-[44px] px-2 py-1 rounded-md bg-theme-surface-alt text-theme-text text-sm font-body outline-none ring-2 ring-theme-accent"
             maxLength={100}
             aria-label="Edit task title"
           />
         ) : (
           <button
             onClick={handleTitleClick}
-            className={`flex-1 min-h-[44px] px-2 py-1 text-left text-sm font-body rounded-md hover:bg-zinc-100 dark:hover:bg-lavender-900 transition-colors ${
+            className={`flex-1 min-h-[44px] px-2 py-1 text-left text-sm font-body rounded-md hover:bg-theme-surface-alt transition-colors ${
               task.completed
-                ? 'line-through text-zinc-400 dark:text-zinc-500'
-                : 'text-zinc-900 dark:text-zinc-100'
+                ? 'line-through text-theme-text-faint'
+                : 'text-theme-text'
             }`}
             aria-label={`Edit title: ${task.title}`}
           >
@@ -230,7 +230,7 @@ export function TaskCard({ task }: TaskCardProps) {
             className={`min-w-[44px] min-h-[44px] inline-flex items-center px-2 py-1 rounded-md text-xs font-medium transition-colors ${
               task.typeTag
                 ? `${TYPE_TAG_STYLES[task.typeTag].badge} ${TYPE_TAG_STYLES[task.typeTag].label}`
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                : 'bg-theme-surface-alt text-theme-text-faint hover:bg-theme-border-subtle'
             }`}
             aria-label={task.typeTag ? `Type tag: ${getTypeTagLabel(task.typeTag)}. Click to change.` : 'Assign type tag'}
             aria-expanded={showTagDropdown}
@@ -242,7 +242,7 @@ export function TaskCard({ task }: TaskCardProps) {
           {/* Dropdown */}
           {showTagDropdown && (
             <div
-              className="absolute z-10 mt-1 left-0 w-48 rounded-lg border border-zinc-200 dark:border-lavender-800 bg-white dark:bg-lavender-950 shadow-lg py-1"
+              className="absolute z-10 mt-1 left-0 w-48 rounded-lg border border-theme-border bg-theme-surface shadow-lg py-1"
               role="listbox"
               aria-label="Select type tag"
             >
@@ -250,7 +250,7 @@ export function TaskCard({ task }: TaskCardProps) {
                 <button
                   key={option.value}
                   onClick={() => handleSetTypeTag(option.value)}
-                  className={`w-full min-h-[44px] px-3 py-2 text-left text-sm hover:bg-zinc-100 dark:hover:bg-lavender-900 transition-colors flex items-center gap-2 ${
+                  className={`w-full min-h-[44px] px-3 py-2 text-left text-sm hover:bg-theme-surface-alt transition-colors flex items-center gap-2 ${
                     task.typeTag === option.value ? 'font-semibold' : ''
                   }`}
                   role="option"
@@ -260,13 +260,13 @@ export function TaskCard({ task }: TaskCardProps) {
                     className={`w-3 h-3 rounded-full ${TYPE_TAG_STYLES[option.value].badge}`}
                     aria-hidden="true"
                   />
-                  <span className="text-zinc-900 dark:text-zinc-100">{option.label}</span>
+                  <span className="text-theme-text">{option.label}</span>
                 </button>
               ))}
               {task.typeTag && (
                 <button
                   onClick={handleRemoveTypeTag}
-                  className="w-full min-h-[44px] px-3 py-2 text-left text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-lavender-900 transition-colors border-t border-zinc-100 dark:border-lavender-800"
+                  className="w-full min-h-[44px] px-3 py-2 text-left text-sm text-theme-text-faint hover:bg-theme-surface-alt transition-colors border-t border-theme-border"
                   role="option"
                   aria-selected={false}
                 >
@@ -283,7 +283,7 @@ export function TaskCard({ task }: TaskCardProps) {
           className={`min-w-[44px] min-h-[44px] inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
             task.recurring
               ? 'bg-lavender-100 dark:bg-lavender-800 text-lavender-900 dark:text-lavender-100'
-              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+              : 'bg-theme-surface-alt text-theme-text-faint hover:bg-theme-border-subtle'
           }`}
           aria-label={task.recurring ? 'Disable recurrence' : 'Enable recurrence'}
           aria-pressed={task.recurring}

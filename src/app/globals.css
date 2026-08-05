@@ -52,13 +52,144 @@
   --color-pink-900: #831843;
   --color-pink-950: #500724;
 
+  /* Circuit theme colors */
+  --color-electric-50: #eff6ff;
+  --color-electric-100: #dbeafe;
+  --color-electric-200: #bfdbfe;
+  --color-electric-300: #93c5fd;
+  --color-electric-400: #60a5fa;
+  --color-electric-500: #3b82f6;
+  --color-electric-600: #2563eb;
+  --color-electric-700: #1d4ed8;
+  --color-electric-800: #1e40af;
+  --color-electric-900: #1e3a8a;
+  --color-electric-950: #172554;
+
+  --color-cyan-50: #ecfeff;
+  --color-cyan-100: #cffafe;
+  --color-cyan-200: #a5f3fc;
+  --color-cyan-300: #67e8f9;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-500: #06b6d4;
+  --color-cyan-600: #0891b2;
+  --color-cyan-700: #0e7490;
+  --color-cyan-800: #155e75;
+  --color-cyan-900: #164e63;
+  --color-cyan-950: #083344;
+
+  /* Semantic theme tokens */
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-surface: var(--theme-surface);
+  --color-theme-surface-alt: var(--theme-surface-alt);
+  --color-theme-border: var(--theme-border);
+  --color-theme-border-subtle: var(--theme-border-subtle);
+  --color-theme-text: var(--theme-text);
+  --color-theme-text-muted: var(--theme-text-muted);
+  --color-theme-text-faint: var(--theme-text-faint);
+  --color-theme-accent: var(--theme-accent);
+  --color-theme-accent-hover: var(--theme-accent-hover);
+  --color-theme-accent-text: var(--theme-accent-text);
+  --color-theme-accent-subtle: var(--theme-accent-subtle);
+  --color-theme-brand: var(--theme-brand);
+
   /* Font families */
-  --font-display: "Fredoka", sans-serif;
-  --font-body: "Nunito", sans-serif;
+  --font-display: var(--theme-font-display);
+  --font-body: var(--theme-font-body);
+}
+
+/* ============================================
+   FAIRY LIGHT THEME
+   Soft, whimsical — cream bg, lavender/rose accents
+   ============================================ */
+:root.fairy-light {
+  --theme-bg: #fdf8f6;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #faf5ff;
+  --theme-border: #e9d5ff;
+  --theme-border-subtle: #f3e8ff;
+  --theme-text: #3f3f46;
+  --theme-text-muted: #71717a;
+  --theme-text-faint: #a1a1aa;
+  --theme-accent: #8b5cf6;
+  --theme-accent-hover: #7c3aed;
+  --theme-accent-text: #ffffff;
+  --theme-accent-subtle: #ede9fe;
+  --theme-brand: #a78bfa;
+  --theme-font-display: var(--font-fredoka), "Fredoka", sans-serif;
+  --theme-font-body: var(--font-nunito), "Nunito", sans-serif;
+}
+
+/* ============================================
+   FAIRY DARK THEME
+   Deep plum/indigo, glowing pastels
+   ============================================ */
+:root.fairy-dark {
+  --theme-bg: #1a0f2e;
+  --theme-surface: #251545;
+  --theme-surface-alt: #2e1a4f;
+  --theme-border: #4c1d95;
+  --theme-border-subtle: #3b1578;
+  --theme-text: #f5f3ff;
+  --theme-text-muted: #c4b5fd;
+  --theme-text-faint: #8b7ab8;
+  --theme-accent: #a78bfa;
+  --theme-accent-hover: #c4b5fd;
+  --theme-accent-text: #1a0f2e;
+  --theme-accent-subtle: #3b1578;
+  --theme-brand: #c4b5fd;
+  --theme-font-display: var(--font-fredoka), "Fredoka", sans-serif;
+  --theme-font-body: var(--font-nunito), "Nunito", sans-serif;
+}
+
+/* ============================================
+   CIRCUIT LIGHT THEME
+   Clean white/slate, electric blue + teal accents
+   ============================================ */
+:root.circuit-light {
+  --theme-bg: #f8fafc;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #f1f5f9;
+  --theme-border: #e2e8f0;
+  --theme-border-subtle: #f1f5f9;
+  --theme-text: #0f172a;
+  --theme-text-muted: #475569;
+  --theme-text-faint: #94a3b8;
+  --theme-accent: #2563eb;
+  --theme-accent-hover: #1d4ed8;
+  --theme-accent-text: #ffffff;
+  --theme-accent-subtle: #dbeafe;
+  --theme-brand: #3b82f6;
+  --theme-font-display: var(--font-inter), "Inter", sans-serif;
+  --theme-font-body: var(--font-inter), "Inter", sans-serif;
+}
+
+/* ============================================
+   CIRCUIT DARK THEME
+   Rich navy/charcoal, cyan + electric blue highlights
+   ============================================ */
+:root.circuit-dark {
+  --theme-bg: #0b1120;
+  --theme-surface: #111827;
+  --theme-surface-alt: #1e293b;
+  --theme-border: #1e3a5f;
+  --theme-border-subtle: #1e293b;
+  --theme-text: #f1f5f9;
+  --theme-text-muted: #94a3b8;
+  --theme-text-faint: #64748b;
+  --theme-accent: #22d3ee;
+  --theme-accent-hover: #67e8f9;
+  --theme-accent-text: #0b1120;
+  --theme-accent-subtle: #164e63;
+  --theme-brand: #06b6d4;
+  --theme-font-display: var(--font-inter), "Inter", sans-serif;
+  --theme-font-body: var(--font-inter), "Inter", sans-serif;
 }
 
 body {
-  font-family: var(--font-body);
+  font-family: var(--theme-font-body);
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @keyframes toast-slide-in {

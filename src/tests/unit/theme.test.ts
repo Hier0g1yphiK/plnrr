@@ -1,6 +1,6 @@
 /**
  * Unit tests for the theme engine (src/lib/theme-context.tsx)
- * Validates: Requirements 9.1, 9.2, 9.5, 9.6
+ * Validates: Theme switching, persistence, migration from old values, class application
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -46,56 +46,62 @@ describe('Theme Engine', () => {
       writable: true,
       configurable: true,
     });
-    document.documentElement.classList.remove('dark');
+    document.documentElement.className = '';
   });
 
   afterEach(() => {
-    document.documentElement.classList.remove('dark');
+    document.documentElement.className = '';
     vi.restoreAllMocks();
   });
 
-  describe('Default dark mode', () => {
-    it('defaults to dark when no stored preference exists', () => {
+  describe('Default theme', () => {
+    it('defaults to fairy-dark when no stored preference exists', () => {
       const { result } = renderHook(() => useTheme(), { wrapper });
 
-      expect(result.current.theme).toBe('dark');
+      expect(result.current.theme).toBe('fairy-dark');
+      expect(result.current.isDark).toBe(true);
       expect(document.documentElement.classList.contains('dark')).toBe(true);
+      expect(document.documentElement.classList.contains('fairy-dark')).toBe(true);
     });
   });
 
-  describe('Toggle persists to localStorage', () => {
-    it('persists new theme value to localStorage after toggle', () => {
+  describe('setTheme persists to localStorage', () => {
+    it('persists new theme value to localStorage', () => {
       const { result } = renderHook(() => useTheme(), { wrapper });
 
       act(() => {
-        result.current.toggleTheme();
+        result.current.setTheme('circuit-light');
       });
 
-      expect(mockStorage.setItem).toHaveBeenCalledWith(STORAGE_KEYS.theme, 'light');
-      expect(result.current.theme).toBe('light');
+      expect(mockStorage.setItem).toHaveBeenCalledWith(STORAGE_KEYS.theme, 'circuit-light');
+      expect(result.current.theme).toBe('circuit-light');
+      expect(result.current.isDark).toBe(false);
     });
 
-    it('toggles back to dark and persists', () => {
+    it('switches between all four themes', () => {
       const { result } = renderHook(() => useTheme(), { wrapper });
 
-      // Toggle to light
-      act(() => {
-        result.current.toggleTheme();
-      });
+      act(() => { result.current.setTheme('fairy-light'); });
+      expect(result.current.theme).toBe('fairy-light');
+      expect(result.current.isDark).toBe(false);
 
-      // Toggle back to dark
-      act(() => {
-        result.current.toggleTheme();
-      });
+      act(() => { result.current.setTheme('circuit-dark'); });
+      expect(result.current.theme).toBe('circuit-dark');
+      expect(result.current.isDark).toBe(true);
 
-      expect(mockStorage.setItem).toHaveBeenCalledWith(STORAGE_KEYS.theme, 'dark');
-      expect(result.current.theme).toBe('dark');
+      act(() => { result.current.setTheme('circuit-light'); });
+      expect(result.current.theme).toBe('circuit-light');
+      expect(result.current.isDark).toBe(false);
+
+      act(() => { result.current.setTheme('fairy-dark'); });
+      expect(result.current.theme).toBe('fairy-dark');
+      expect(result.current.isDark).toBe(true);
     });
   });
 
-  describe('Invalid stored value falls back to dark', () => {
-    it('falls back to dark when localStorage contains an invalid value', () => {
-      mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: 'invalid' });
+  describe('Migration from old theme values', () => {
+    it('migrates old "dark" value to fairy-dark', () => {
+      mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: 'dark' });
       Object.defineProperty(window, 'localStorage', {
         value: mockStorage,
         writable: true,
@@ -104,58 +110,11 @@ describe('Theme Engine', () => {
 
       const { result } = renderHook(() => useTheme(), { wrapper });
 
-      expect(result.current.theme).toBe('dark');
+      expect(result.current.theme).toBe('fairy-dark');
       expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
 
-    it('falls back to dark when localStorage contains an empty string', () => {
-      mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: '' });
-      Object.defineProperty(window, 'localStorage', {
-        value: mockStorage,
-        writable: true,
-        configurable: true,
-      });
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      expect(result.current.theme).toBe('dark');
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-    });
-  });
-
-  describe('Class application on document element', () => {
-    it('removes dark class after toggling to light', () => {
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      // Should start with dark class
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-
-      act(() => {
-        result.current.toggleTheme();
-      });
-
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
-    });
-
-    it('re-adds dark class after toggling back from light', () => {
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      // Toggle to light
-      act(() => {
-        result.current.toggleTheme();
-      });
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
-
-      // Toggle back to dark
-      act(() => {
-        result.current.toggleTheme();
-      });
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-    });
-  });
-
-  describe('Light mode on load', () => {
-    it('loads with light theme when localStorage has light stored', () => {
+    it('migrates old "light" value to fairy-light', () => {
       mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: 'light' });
       Object.defineProperty(window, 'localStorage', {
         value: mockStorage,
@@ -165,8 +124,100 @@ describe('Theme Engine', () => {
 
       const { result } = renderHook(() => useTheme(), { wrapper });
 
-      expect(result.current.theme).toBe('light');
+      expect(result.current.theme).toBe('fairy-light');
       expect(document.documentElement.classList.contains('dark')).toBe(false);
+    });
+  });
+
+  describe('Invalid stored value falls back to fairy-dark', () => {
+    it('falls back to fairy-dark when localStorage contains an invalid value', () => {
+      mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: 'invalid' });
+      Object.defineProperty(window, 'localStorage', {
+        value: mockStorage,
+        writable: true,
+        configurable: true,
+      });
+
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      expect(result.current.theme).toBe('fairy-dark');
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+    });
+
+    it('falls back to fairy-dark when localStorage contains an empty string', () => {
+      mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: '' });
+      Object.defineProperty(window, 'localStorage', {
+        value: mockStorage,
+        writable: true,
+        configurable: true,
+      });
+
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      expect(result.current.theme).toBe('fairy-dark');
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+    });
+  });
+
+  describe('Class application on document element', () => {
+    it('applies theme class and dark class for dark themes', () => {
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      act(() => { result.current.setTheme('circuit-dark'); });
+
+      expect(document.documentElement.classList.contains('circuit-dark')).toBe(true);
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+      // Old theme class should be removed
+      expect(document.documentElement.classList.contains('fairy-dark')).toBe(false);
+    });
+
+    it('removes dark class for light themes', () => {
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      act(() => { result.current.setTheme('fairy-light'); });
+
+      expect(document.documentElement.classList.contains('fairy-light')).toBe(true);
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
+    });
+
+    it('only keeps one theme class at a time', () => {
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      act(() => { result.current.setTheme('circuit-light'); });
+      act(() => { result.current.setTheme('fairy-dark'); });
+
+      expect(document.documentElement.classList.contains('fairy-dark')).toBe(true);
+      expect(document.documentElement.classList.contains('circuit-light')).toBe(false);
+    });
+  });
+
+  describe('Loads persisted new theme values', () => {
+    it('loads fairy-light from storage', () => {
+      mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: 'fairy-light' });
+      Object.defineProperty(window, 'localStorage', {
+        value: mockStorage,
+        writable: true,
+        configurable: true,
+      });
+
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      expect(result.current.theme).toBe('fairy-light');
+      expect(result.current.isDark).toBe(false);
+    });
+
+    it('loads circuit-dark from storage', () => {
+      mockStorage = createStorageMock({ [STORAGE_KEYS.theme]: 'circuit-dark' });
+      Object.defineProperty(window, 'localStorage', {
+        value: mockStorage,
+        writable: true,
+        configurable: true,
+      });
+
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      expect(result.current.theme).toBe('circuit-dark');
+      expect(result.current.isDark).toBe(true);
     });
   });
 });

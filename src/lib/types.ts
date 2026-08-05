@@ -4,6 +4,7 @@ export interface ChecklistItem {
   id: string; // nanoid
   text: string; // 1–200 chars
   categoryId: string; // reference to Category.id
+  minutesBefore: number | null; // minutes before stream to complete (null = no time set)
 }
 
 export interface Category {
@@ -23,6 +24,7 @@ export interface Template {
 export interface ActiveChecklist {
   templateId: string; // source template reference
   items: ActiveChecklistItem[];
+  streamTime: string | null; // HH:mm format, null = not set
 }
 
 export interface ActiveChecklistItem {
@@ -30,6 +32,7 @@ export interface ActiveChecklistItem {
   text: string; // copied from template at load time
   categoryId: string;
   checked: boolean;
+  minutesBefore: number | null; // copied from template at load time
 }
 
 export interface ChecklistState {
@@ -72,4 +75,7 @@ export interface OrganizerState {
 
 // === Theme ===
 
+export type ThemeName = 'fairy-light' | 'fairy-dark' | 'circuit-light' | 'circuit-dark';
+
+/** @deprecated Use ThemeName instead */
 export type ThemePreference = 'dark' | 'light';

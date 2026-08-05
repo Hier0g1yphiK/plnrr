@@ -1,0 +1,34 @@
+{
+  "changelists": [
+    {
+      "name": "Default",
+      "files": [
+        "src/lib/types.ts",
+        "src/lib/theme-context.tsx",
+        ".vscode/changelists.json",
+        ".vscode/settings.json",
+        "src/app/globals.css",
+        "src/app/layout.tsx",
+        "src/components/Navigation.tsx",
+        "src/components/organizer/OrganizerView.tsx",
+        "src/components/organizer/DayColumn.tsx",
+        "src/components/organizer/TaskCard.tsx",
+        "src/components/checklist/ChecklistView.tsx",
+        "src/components/checklist/ActiveChecklist.tsx",
+        "src/components/checklist/TemplateList.tsx",
+        "src/components/checklist/TemplateEditor.tsx",
+        "src/components/LoadingSkeleton.tsx",
+        "tailwind.config.ts",
+        "src/tests/unit/theme.test.ts",
+        "src/tests/components/TaskCard.test.tsx",
+        "src/lib/schemas.ts",
+        "src/lib/migrations.ts",
+        "src/lib/checklist-reducer.ts",
+        "src/lib/checklist-context.tsx",
+        "src/tests/properties/checklist.property.test.ts",
+        "src/tests/unit/migrations.test.ts"
+      ]
+    }
+  ],
+  "active": "Default"
+}

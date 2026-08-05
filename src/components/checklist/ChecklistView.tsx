@@ -118,7 +118,7 @@ export function ChecklistView() {
         <div className="space-y-4">
           <button
             onClick={handleBackToList}
-            className="min-w-[44px] min-h-[44px] flex items-center gap-2 text-sm font-body text-zinc-500 dark:text-zinc-400 hover:text-lavender-500 dark:hover:text-lavender-400 transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center gap-2 text-sm font-body text-theme-text-muted hover:text-theme-accent transition-colors"
             aria-label="Back to template list"
           >
             <svg
@@ -138,8 +138,8 @@ export function ChecklistView() {
             Back
           </button>
 
-          <div className="rounded-xl border border-zinc-200 dark:border-lavender-800 bg-white dark:bg-lavender-950/50 p-6 space-y-4">
-            <h2 className="font-display text-lg font-semibold text-zinc-800 dark:text-zinc-100">
+          <div className="rounded-xl border border-theme-border bg-theme-surface p-6 space-y-4">
+            <h2 className="font-display text-lg font-semibold text-theme-text">
               New Template
             </h2>
             <div className="space-y-2">
@@ -157,7 +157,7 @@ export function ChecklistView() {
                 placeholder="Template name"
                 maxLength={100}
                 autoFocus
-                className="w-full min-h-[44px] px-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-100 placeholder-zinc-500 font-body text-sm focus:outline-none focus:ring-2 focus:ring-lavender-500"
+                className="w-full min-h-[44px] px-4 rounded-lg bg-theme-surface-alt border border-theme-border text-theme-text placeholder-theme-text-faint font-body text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent"
                 aria-label="Template name"
               />
               <InlineError message={createError} />
@@ -165,13 +165,13 @@ export function ChecklistView() {
             <div className="flex gap-2">
               <button
                 onClick={handleSubmitCreate}
-                className="min-w-[44px] min-h-[44px] px-6 py-2 rounded-lg bg-lavender-500 hover:bg-lavender-600 text-white font-body font-semibold text-sm transition-colors"
+                className="min-w-[44px] min-h-[44px] px-6 py-2 rounded-lg bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-body font-semibold text-sm transition-colors"
               >
                 Create
               </button>
               <button
                 onClick={handleBackToList}
-                className="min-w-[44px] min-h-[44px] px-6 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 font-body text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="min-w-[44px] min-h-[44px] px-6 py-2 rounded-lg border border-theme-border text-theme-text-muted font-body text-sm hover:bg-theme-surface-alt transition-colors"
               >
                 Cancel
               </button>
@@ -196,7 +196,7 @@ export function ChecklistView() {
           {/* Back button to return to template list */}
           <button
             onClick={handleBackToList}
-            className="min-w-[44px] min-h-[44px] flex items-center gap-2 text-sm font-body text-zinc-500 dark:text-zinc-400 hover:text-lavender-500 dark:hover:text-lavender-400 transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center gap-2 text-sm font-body text-theme-text-muted hover:text-theme-accent transition-colors"
             aria-label="Back to template list"
           >
             <svg
@@ -224,7 +224,7 @@ export function ChecklistView() {
               onClick={() =>
                 handleEditTemplate(state.activeChecklist!.templateId)
               }
-              className="min-w-[44px] min-h-[44px] w-full px-4 py-2 rounded-lg border border-zinc-200 dark:border-lavender-800 text-sm font-body text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-lavender-900/30 transition-colors"
+              className="min-w-[44px] min-h-[44px] w-full px-4 py-2 rounded-lg border border-theme-border text-sm font-body text-theme-text-muted hover:bg-theme-surface-alt transition-colors"
               aria-label="Edit source template"
             >
               Edit Template

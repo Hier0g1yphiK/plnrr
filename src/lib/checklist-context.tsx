@@ -17,7 +17,7 @@ interface ChecklistContextValue {
 const ChecklistContext = createContext<ChecklistContextValue | null>(null);
 
 const DEFAULT_CHECKLIST_STATE: ChecklistState = {
-  version: 1,
+  version: 2,
   templates: [],
   activeChecklist: null,
 };

@@ -18,6 +18,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
   const [categoryError, setCategoryError] = useState('');
   const [itemInputs, setItemInputs] = useState<Record<string, string>>({});
   const [itemErrors, setItemErrors] = useState<Record<string, string>>({});
+  const [itemMinutesInputs, setItemMinutesInputs] = useState<Record<string, string>>({});
   const [renamingCategory, setRenamingCategory] = useState<string | null>(null);
   const [renameCategoryValue, setRenameCategoryValue] = useState('');
   const [renameCategoryError, setRenameCategoryError] = useState('');
@@ -59,11 +60,11 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
   if (!template) {
     return (
       <div className="p-6 text-center">
-        <p className="text-zinc-400 font-body">Template not found.</p>
+        <p className="text-theme-text-faint font-body">Template not found.</p>
         {onBack && (
           <button
             onClick={onBack}
-            className="mt-4 text-lavender-400 hover:text-lavender-300 font-body text-sm"
+            className="mt-4 text-theme-accent hover:text-theme-accent-hover font-body text-sm"
           >
             ← Back to templates
           </button>
@@ -164,11 +165,18 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
       setItemErrors((prev) => ({ ...prev, [categoryId]: error }));
       return;
     }
+    const minutesStr = itemMinutesInputs[categoryId] || '';
+    const minutesBefore = minutesStr ? parseInt(minutesStr, 10) : null;
+    if (minutesBefore !== null && (isNaN(minutesBefore) || minutesBefore < 0)) {
+      setItemErrors((prev) => ({ ...prev, [categoryId]: 'Minutes must be a positive number' }));
+      return;
+    }
     dispatch({
       type: 'ADD_ITEM',
-      payload: { templateId, categoryId, text: text.trim() },
+      payload: { templateId, categoryId, text: text.trim(), minutesBefore },
     });
     setItemInputs((prev) => ({ ...prev, [categoryId]: '' }));
+    setItemMinutesInputs((prev) => ({ ...prev, [categoryId]: '' }));
     setItemErrors((prev) => ({ ...prev, [categoryId]: '' }));
   };
 
@@ -191,7 +199,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
           {onBack && (
             <button
               onClick={onBack}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-lavender-300 transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-theme-text-faint hover:text-theme-accent transition-colors"
               aria-label="Back to template list"
             >
               <svg
@@ -210,11 +218,11 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
               </svg>
             </button>
           )}
-          <h2 className="font-display text-xl font-semibold text-zinc-100 dark:text-zinc-100 text-zinc-800">
+          <h2 className="font-display text-xl font-semibold text-theme-text">
             {template.name}
           </h2>
         </div>
-        <span className="text-sm text-zinc-400 font-body">
+        <span className="text-sm text-theme-text-faint font-body">
           {template.items.length}/50 items
         </span>
       </div>
@@ -239,12 +247,12 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
             }}
             placeholder="New category name"
             maxLength={50}
-            className="flex-1 min-h-[44px] px-3 rounded-lg bg-zinc-800 dark:bg-zinc-800 bg-zinc-100 border border-zinc-700 dark:border-zinc-700 border-zinc-300 text-zinc-100 dark:text-zinc-100 text-zinc-800 placeholder-zinc-500 font-body text-sm focus:outline-none focus:ring-2 focus:ring-lavender-500"
+            className="flex-1 min-h-[44px] px-3 rounded-lg bg-theme-surface-alt border border-theme-border text-theme-text placeholder-theme-text-faint font-body text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent"
             aria-label="New category name"
           />
           <button
             onClick={handleAddCategory}
-            className="min-w-[44px] min-h-[44px] px-4 rounded-lg bg-lavender-600 hover:bg-lavender-500 text-white font-body text-sm font-medium transition-colors"
+            className="min-w-[44px] min-h-[44px] px-4 rounded-lg bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-body text-sm font-medium transition-colors"
             aria-label="Add category"
           >
             Add Category
@@ -255,11 +263,11 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
 
       {/* Empty state */}
       {!hasItems && sortedCategories.length > 0 && (
-        <div className="rounded-lg border border-dashed border-zinc-600 dark:border-zinc-600 border-zinc-300 p-8 text-center">
-          <p className="text-zinc-400 font-body mb-2">
+        <div className="rounded-lg border border-dashed border-theme-border p-8 text-center">
+          <p className="text-theme-text-faint font-body mb-2">
             This template has no items yet.
           </p>
-          <p className="text-zinc-500 font-body text-sm">
+          <p className="text-theme-text-faint font-body text-sm">
             Add items to categories below to build your checklist.
           </p>
         </div>
@@ -274,10 +282,10 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
           return (
             <div
               key={category.id}
-              className="rounded-lg border border-zinc-700 dark:border-zinc-700 border-zinc-200 bg-zinc-800/50 dark:bg-zinc-800/50 bg-white overflow-hidden"
+              className="rounded-lg border border-theme-border bg-theme-surface overflow-hidden"
             >
               {/* Category header */}
-              <div className="flex items-center justify-between px-4 py-3 bg-zinc-800 dark:bg-zinc-800 bg-zinc-50 border-b border-zinc-700 dark:border-zinc-700 border-zinc-200">
+              <div className="flex items-center justify-between px-4 py-3 bg-theme-surface-alt border-b border-theme-border">
                 {isRenaming ? (
                   <div className="flex-1 flex items-center gap-2">
                     <input
@@ -292,7 +300,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                         if (e.key === 'Escape') handleCancelRename();
                       }}
                       maxLength={50}
-                      className="flex-1 min-h-[36px] px-2 rounded bg-zinc-700 dark:bg-zinc-700 bg-white border border-zinc-600 dark:border-zinc-600 border-zinc-300 text-zinc-100 dark:text-zinc-100 text-zinc-800 font-body text-sm focus:outline-none focus:ring-2 focus:ring-lavender-500"
+                      className="flex-1 min-h-[36px] px-2 rounded bg-theme-surface border border-theme-border text-theme-text font-body text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent"
                       aria-label="Rename category"
                       autoFocus
                     />
@@ -318,9 +326,9 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                   </div>
                 ) : (
                   <>
-                    <h3 className="font-body font-semibold text-sm text-zinc-200 dark:text-zinc-200 text-zinc-700">
+                    <h3 className="font-body font-semibold text-sm text-theme-text">
                       {category.name}
-                      <span className="ml-2 text-zinc-500 font-normal">
+                      <span className="ml-2 text-theme-text-faint font-normal">
                         ({categoryItems.length})
                       </span>
                     </h3>
@@ -329,7 +337,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                       <button
                         onClick={() => handleMoveCategory(category.id, 'up')}
                         disabled={index === 0}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-lavender-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-theme-text-faint hover:text-theme-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         aria-label={`Move ${category.name} up`}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -339,7 +347,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                       <button
                         onClick={() => handleMoveCategory(category.id, 'down')}
                         disabled={index === sortedCategories.length - 1}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-lavender-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-theme-text-faint hover:text-theme-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         aria-label={`Move ${category.name} down`}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -349,7 +357,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                       {/* Rename button */}
                       <button
                         onClick={() => handleStartRename(category)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-lavender-300 transition-colors"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-theme-text-faint hover:text-theme-accent transition-colors"
                         aria-label={`Rename ${category.name}`}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -360,7 +368,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                       {/* Delete button */}
                       <button
                         onClick={() => handleDeleteCategory(category.id)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-red-400 transition-colors"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-theme-text-faint hover:text-red-400 transition-colors"
                         aria-label={`Delete ${category.name}`}
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -381,7 +389,7 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
               {/* Items list */}
               <div className="px-4 py-2">
                 {categoryItems.length === 0 ? (
-                  <p className="text-zinc-500 text-sm font-body italic py-2">
+                  <p className="text-theme-text-faint text-sm font-body italic py-2">
                     No items in this category
                   </p>
                 ) : (
@@ -391,12 +399,19 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                         key={item.id}
                         className="flex items-center justify-between py-1.5 group"
                       >
-                        <span className="text-zinc-300 dark:text-zinc-300 text-zinc-600 font-body text-sm">
-                          {item.text}
-                        </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-theme-text font-body text-sm">
+                            {item.text}
+                          </span>
+                          {item.minutesBefore !== null && (
+                            <span className="shrink-0 text-xs font-body px-1.5 py-0.5 rounded bg-theme-accent-subtle text-theme-accent">
+                              {item.minutesBefore}m before
+                            </span>
+                          )}
+                        </div>
                         <button
                           onClick={() => handleDeleteItem(item.id)}
-                          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
+                          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-theme-text-faint hover:text-red-400 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all"
                           aria-label={`Delete item: ${item.text}`}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -433,13 +448,31 @@ export function TemplateEditor({ templateId, onBack }: TemplateEditorProps) {
                       placeholder="Add item..."
                       maxLength={200}
                       disabled={template.items.length >= 50}
-                      className="flex-1 min-h-[44px] px-3 rounded-lg bg-zinc-700/50 dark:bg-zinc-700/50 bg-zinc-100 border border-zinc-600 dark:border-zinc-600 border-zinc-300 text-zinc-100 dark:text-zinc-100 text-zinc-800 placeholder-zinc-500 font-body text-sm focus:outline-none focus:ring-2 focus:ring-lavender-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 min-h-[44px] px-3 rounded-lg bg-theme-surface-alt border border-theme-border text-theme-text placeholder-theme-text-faint font-body text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={`Add item to ${category.name}`}
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      value={itemMinutesInputs[category.id] || ''}
+                      onChange={(e) => {
+                        setItemMinutesInputs((prev) => ({
+                          ...prev,
+                          [category.id]: e.target.value,
+                        }));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddItem(category.id);
+                      }}
+                      placeholder="min"
+                      disabled={template.items.length >= 50}
+                      className="w-20 min-h-[44px] px-3 rounded-lg bg-theme-surface-alt border border-theme-border text-theme-text placeholder-theme-text-faint font-body text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label={`Minutes before stream for new item in ${category.name}`}
                     />
                     <button
                       onClick={() => handleAddItem(category.id)}
                       disabled={template.items.length >= 50}
-                      className="min-w-[44px] min-h-[44px] px-3 rounded-lg bg-lavender-600 hover:bg-lavender-500 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white font-body text-sm transition-colors"
+                      className="min-w-[44px] min-h-[44px] px-3 rounded-lg bg-theme-accent hover:bg-theme-accent-hover disabled:bg-theme-surface-alt disabled:cursor-not-allowed text-theme-accent-text font-body text-sm transition-colors"
                       aria-label={`Add item to ${category.name}`}
                     >
                       +

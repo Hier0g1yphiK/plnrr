@@ -16,6 +16,7 @@ const arbActiveChecklistItem = () =>
     text: fc.string({ minLength: 1, maxLength: 200 }),
     categoryId: arbId(),
     checked: fc.boolean(),
+    minutesBefore: fc.oneof(fc.constant(null), fc.integer({ min: 0, max: 480 })),
   });
 
 /**
@@ -25,6 +26,7 @@ const arbActiveChecklist = (): fc.Arbitrary<ActiveChecklist> =>
   fc.record({
     templateId: arbId(),
     items: fc.array(arbActiveChecklistItem(), { minLength: 1, maxLength: 50 }),
+    streamTime: fc.oneof(fc.constant(null), fc.tuple(fc.integer({ min: 0, max: 23 }), fc.integer({ min: 0, max: 59 })).map(([h, m]) => `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`)),
   });
 
 /**
@@ -263,6 +265,7 @@ const arbTemplateWithItems = () =>
           id: arbId(),
           text: fc.string({ minLength: 1, maxLength: 100 }),
           categoryId: fc.constantFrom(...categoryIds),
+          minutesBefore: fc.oneof(fc.constant(null), fc.integer({ min: 0, max: 480 })),
         }),
         { minLength: 1, maxLength: 10 }
       );
@@ -484,6 +487,7 @@ describe('Property 9: Active Checklist Loading', () => {
         id: arbId(),
         text: fc.string({ minLength: 1, maxLength: 200 }),
         categoryId: fc.constantFrom(...categoryIds),
+        minutesBefore: fc.oneof(fc.constant(null), fc.integer({ min: 0, max: 480 })),
       });
       return fc.tuple(
         fc.constant(categories),

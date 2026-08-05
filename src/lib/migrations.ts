@@ -41,10 +41,43 @@ export interface MigrationRegistry {
  * Future migrations should be added in order: { toVersion: 2, migrate: v1ToV2 }, etc.
  */
 export const checklistMigrations: MigrationRegistry = {
-  currentVersion: 1,
+  currentVersion: 2,
   migrations: [
-    // Example for future use:
-    // { toVersion: 2, migrate: (data) => ({ ...data, newField: 'default', version: 2 }) },
+    {
+      toVersion: 2,
+      migrate: (data: unknown) => {
+        const state = data as Record<string, unknown>;
+        // Add minutesBefore: null to all template items
+        const templates = (state.templates as Array<Record<string, unknown>>) ?? [];
+        const migratedTemplates = templates.map((t) => ({
+          ...t,
+          items: ((t.items as Array<Record<string, unknown>>) ?? []).map((item) => ({
+            ...item,
+            minutesBefore: (item as Record<string, unknown>).minutesBefore ?? null,
+          })),
+        }));
+
+        // Add minutesBefore: null to active checklist items and streamTime: null
+        let activeChecklist = state.activeChecklist as Record<string, unknown> | null;
+        if (activeChecklist) {
+          activeChecklist = {
+            ...activeChecklist,
+            streamTime: (activeChecklist as Record<string, unknown>).streamTime ?? null,
+            items: ((activeChecklist.items as Array<Record<string, unknown>>) ?? []).map((item) => ({
+              ...item,
+              minutesBefore: (item as Record<string, unknown>).minutesBefore ?? null,
+            })),
+          };
+        }
+
+        return {
+          ...state,
+          version: 2,
+          templates: migratedTemplates,
+          activeChecklist,
+        };
+      },
+    },
   ],
 };
 

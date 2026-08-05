@@ -1,14 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Fredoka, Nunito } from "next/font/google";
+import { Fredoka, Nunito, Inter } from "next/font/google";
 import "./globals.css";
 
 const fredoka = Fredoka({
-  variable: "--font-display",
+  variable: "--font-fredoka",
   subsets: ["latin"],
 });
 
 const nunito = Nunito({
-  variable: "--font-body",
+  variable: "--font-nunito",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -26,9 +31,14 @@ const themeInitScript = `
 (function() {
   try {
     var theme = localStorage.getItem("plnrr:theme");
-    if (theme === "light") {
-      document.documentElement.classList.remove("dark");
-    } else {
+    var valid = ["fairy-light","fairy-dark","circuit-light","circuit-dark"];
+    if (valid.indexOf(theme) === -1) {
+      // Migrate old values
+      if (theme === "light") theme = "fairy-light";
+      else theme = "fairy-dark";
+    }
+    document.documentElement.classList.add(theme);
+    if (theme.indexOf("-dark") !== -1) {
       document.documentElement.classList.add("dark");
     }
   } catch (e) {}
@@ -43,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fredoka.variable} ${nunito.variable} dark h-full antialiased`}
+      className={`${fredoka.variable} ${nunito.variable} ${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

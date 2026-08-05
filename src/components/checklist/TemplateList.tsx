@@ -71,14 +71,14 @@ function TemplateCard({
         }
       }}
       data-template-id={template.id}
-      className="group flex items-center justify-between rounded-lg border border-zinc-200 dark:border-lavender-800 bg-white dark:bg-lavender-950/50 p-4 cursor-pointer transition-colors hover:border-lavender-400 dark:hover:border-lavender-500 hover:bg-lavender-50 dark:hover:bg-lavender-900/30"
+      className="group flex items-center justify-between rounded-lg border border-theme-border bg-theme-surface p-4 cursor-pointer transition-colors hover:border-theme-accent hover:bg-theme-accent-subtle"
       aria-label={`Template: ${template.name}, ${template.items.length} items`}
     >
       <div className="flex flex-col gap-1 min-w-0">
-        <span className="font-body font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+        <span className="font-body font-semibold text-theme-text truncate">
           {template.name}
         </span>
-        <span className="text-sm text-zinc-500 dark:text-zinc-400 font-body">
+        <span className="text-sm text-theme-text-muted font-body">
           {template.items.length} {template.items.length === 1 ? 'item' : 'items'}
         </span>
       </div>
@@ -90,7 +90,7 @@ function TemplateCard({
               e.stopPropagation();
               onEdit();
             }}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-lavender-500 dark:hover:text-lavender-400 transition-all"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-theme-text-faint opacity-0 group-hover:opacity-100 hover:text-theme-accent transition-all"
             aria-label={`Edit ${template.name}`}
             title="Edit template"
           >
@@ -117,7 +117,7 @@ function TemplateCard({
           className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
             confirmingDelete
               ? 'text-pink-500 dark:text-pink-400 bg-pink-100 dark:bg-pink-900/30'
-              : 'text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 hover:text-pink-500 dark:hover:text-pink-400'
+              : 'text-theme-text-faint opacity-0 group-hover:opacity-100 hover:text-pink-500 dark:hover:text-pink-400'
           }`}
           aria-label={confirmingDelete ? `Confirm delete ${template.name}` : `Delete ${template.name}`}
           title={confirmingDelete ? 'Click again to confirm' : 'Delete template'}
@@ -143,15 +143,15 @@ export function TemplateList({ onSelectTemplate, onCreateTemplate, onEditTemplat
         <div className="mb-4 text-5xl" aria-hidden="true">
           📋
         </div>
-        <h2 className="font-display text-xl font-semibold text-zinc-800 dark:text-zinc-100 mb-2">
+        <h2 className="font-display text-xl font-semibold text-theme-text mb-2">
           No templates yet
         </h2>
-        <p className="font-body text-zinc-500 dark:text-zinc-400 mb-6 max-w-sm">
+        <p className="font-body text-theme-text-muted mb-6 max-w-sm">
           Create your first checklist template to start tracking your pre-stream routine.
         </p>
         <button
           onClick={onCreateTemplate}
-          className="min-w-[44px] min-h-[44px] px-6 py-3 rounded-lg bg-lavender-500 hover:bg-lavender-600 text-white font-body font-semibold transition-colors"
+          className="min-w-[44px] min-h-[44px] px-6 py-3 rounded-lg bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text font-body font-semibold transition-colors"
           aria-label="Create your first template"
         >
           Create Template
@@ -163,12 +163,12 @@ export function TemplateList({ onSelectTemplate, onCreateTemplate, onEditTemplat
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-display text-lg font-semibold text-zinc-800 dark:text-zinc-100">
+        <h2 className="font-display text-lg font-semibold text-theme-text">
           Templates
         </h2>
         <button
           onClick={onCreateTemplate}
-          className="min-w-[44px] min-h-[44px] px-4 py-2 rounded-lg bg-lavender-500 hover:bg-lavender-600 text-white text-sm font-body font-semibold transition-colors"
+          className="min-w-[44px] min-h-[44px] px-4 py-2 rounded-lg bg-theme-accent hover:bg-theme-accent-hover text-theme-accent-text text-sm font-body font-semibold transition-colors"
           aria-label="Create new template"
         >
           + New

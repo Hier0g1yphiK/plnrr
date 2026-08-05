@@ -40,7 +40,7 @@ export type ReorderCategoriesAction = {
 
 export type AddItemAction = {
   type: 'ADD_ITEM';
-  payload: { templateId: string; categoryId: string; text: string };
+  payload: { templateId: string; categoryId: string; text: string; minutesBefore?: number | null };
 };
 
 export type DeleteItemAction = {
@@ -67,6 +67,16 @@ export type ResetChecklistAction = {
   type: 'RESET_CHECKLIST';
 };
 
+export type SetStreamTimeAction = {
+  type: 'SET_STREAM_TIME';
+  payload: { streamTime: string | null };
+};
+
+export type UpdateItemMinutesBeforeAction = {
+  type: 'UPDATE_ITEM_MINUTES_BEFORE';
+  payload: { templateId: string; itemId: string; minutesBefore: number | null };
+};
+
 export type ChecklistAction =
   | CreateTemplateAction
   | DeleteTemplateAction
@@ -80,7 +90,9 @@ export type ChecklistAction =
   | LoadTemplateAction
   | CheckItemAction
   | UncheckItemAction
-  | ResetChecklistAction;
+  | ResetChecklistAction
+  | SetStreamTimeAction
+  | UpdateItemMinutesBeforeAction;
 
 // === Default Categories ===
 
@@ -315,7 +327,7 @@ export function checklistReducer(
     }
 
     case 'ADD_ITEM': {
-      const { templateId, categoryId, text } = action.payload;
+      const { templateId, categoryId, text, minutesBefore } = action.payload;
       if (!isValidItemText(text)) return state;
 
       const template = state.templates.find((t) => t.id === templateId);
@@ -332,6 +344,7 @@ export function checklistReducer(
         id: nanoid(),
         text: text.trim(),
         categoryId,
+        minutesBefore: minutesBefore ?? null,
       };
 
       return {
@@ -369,11 +382,13 @@ export function checklistReducer(
 
       const activeChecklist: ActiveChecklist = {
         templateId,
+        streamTime: null,
         items: template.items.map((item): ActiveChecklistItem => ({
           id: item.id,
           text: item.text,
           categoryId: item.categoryId,
           checked: false,
+          minutesBefore: item.minutesBefore,
         })),
       };
 
@@ -431,6 +446,48 @@ export function checklistReducer(
             checked: false,
           })),
         },
+      };
+    }
+
+    case 'SET_STREAM_TIME': {
+      if (!state.activeChecklist) return state;
+      const { streamTime } = action.payload;
+
+      return {
+        ...state,
+        activeChecklist: {
+          ...state.activeChecklist,
+          streamTime,
+        },
+      };
+    }
+
+    case 'UPDATE_ITEM_MINUTES_BEFORE': {
+      const { templateId, itemId, minutesBefore } = action.payload;
+
+      const template = state.templates.find((t) => t.id === templateId);
+      if (!template) return state;
+
+      const itemExists = template.items.some((i) => i.id === itemId);
+      if (!itemExists) return state;
+
+      // Validate minutesBefore if provided
+      if (minutesBefore !== null && (minutesBefore < 0 || !Number.isFinite(minutesBefore))) {
+        return state;
+      }
+
+      return {
+        ...state,
+        templates: state.templates.map((t) =>
+          t.id === templateId
+            ? {
+                ...t,
+                items: t.items.map((i) =>
+                  i.id === itemId ? { ...i, minutesBefore } : i
+                ),
+              }
+            : t
+        ),
       };
     }
 

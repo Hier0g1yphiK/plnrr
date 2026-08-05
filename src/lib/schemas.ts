@@ -6,6 +6,7 @@ export const ChecklistItemSchema = z.object({
   id: z.string(),
   text: z.string().min(1).max(200),
   categoryId: z.string(),
+  minutesBefore: z.number().min(0).nullable().default(null),
 }).strip();
 
 export const CategorySchema = z.object({
@@ -27,11 +28,13 @@ export const ActiveChecklistItemSchema = z.object({
   text: z.string(),
   categoryId: z.string(),
   checked: z.boolean(),
+  minutesBefore: z.number().min(0).nullable().default(null),
 }).strip();
 
 export const ActiveChecklistSchema = z.object({
   templateId: z.string(),
   items: z.array(ActiveChecklistItemSchema),
+  streamTime: z.string().nullable().default(null),
 }).strip();
 
 export const ChecklistStateSchema = z.object({

@@ -122,8 +122,8 @@ describe('TaskCard Component', () => {
       render(<TaskCard task={task} />);
 
       const tagButton = screen.getByRole('button', { name: /assign type tag/i });
-      expect(tagButton).toHaveClass('bg-zinc-100');
-      expect(tagButton).toHaveClass('text-zinc-500');
+      expect(tagButton).toHaveClass('bg-theme-surface-alt');
+      expect(tagButton).toHaveClass('text-theme-text-faint');
       expect(tagButton).toHaveTextContent('Tag');
     });
   });

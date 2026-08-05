@@ -176,9 +176,10 @@ describe('Schema Versioning and Migration Logic', () => {
   });
 
   describe('Default registries', () => {
-    it('checklistMigrations has currentVersion 1 and no migrations', () => {
-      expect(checklistMigrations.currentVersion).toBe(1);
-      expect(checklistMigrations.migrations).toEqual([]);
+    it('checklistMigrations has currentVersion 2 with one migration', () => {
+      expect(checklistMigrations.currentVersion).toBe(2);
+      expect(checklistMigrations.migrations).toHaveLength(1);
+      expect(checklistMigrations.migrations[0].toVersion).toBe(2);
     });
 
     it('organizerMigrations has currentVersion 1 and no migrations', () => {
@@ -186,10 +187,21 @@ describe('Schema Versioning and Migration Logic', () => {
       expect(organizerMigrations.migrations).toEqual([]);
     });
 
-    it('checklistMigrations migrate fn passes data through for v1', () => {
+    it('checklistMigrations migrate fn upgrades data from v1 to v2', () => {
       const migrateFn = createMigrateFn(checklistMigrations);
       const data = { version: 1, templates: [], activeChecklist: null };
-      expect(migrateFn(data, 1)).toBe(data);
+      const result = migrateFn(data, 1) as Record<string, unknown>;
+      // v1 data at currentVersion 2: fromVersion (1) < currentVersion (2), so migration runs
+      // But since fromVersion >= currentVersion check uses >=, and 1 < 2, migration applies
+      expect(result.version).toBe(2);
+      expect(result.templates).toEqual([]);
+      expect(result.activeChecklist).toBeNull();
+    });
+
+    it('checklistMigrations migrate fn passes data through for v2', () => {
+      const migrateFn = createMigrateFn(checklistMigrations);
+      const data = { version: 2, templates: [], activeChecklist: null };
+      expect(migrateFn(data, 2)).toBe(data);
     });
 
     it('organizerMigrations migrate fn passes data through for v1', () => {
