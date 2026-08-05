@@ -13,10 +13,13 @@ export default async function SignInPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { error } = await searchParams;
+  const { error, callbackUrl } = await searchParams;
 
   const errorMessage =
     typeof error === "string" ? ERROR_MESSAGES[error] ?? null : null;
+
+  // Determine where to redirect after sign-in (default to home)
+  const redirectTo = typeof callbackUrl === "string" ? callbackUrl : "/";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-theme-bg px-4">
@@ -42,7 +45,7 @@ export default async function SignInPage({
         <form
           action={async () => {
             "use server";
-            await signIn("google");
+            await signIn("google", { redirectTo });
           }}
         >
           <button

@@ -1,62 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# plnrr
+
+Stream prep productivity tools — a multi-user Next.js app with Google OAuth authentication and server-backed persistence.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **Auth**: Auth.js (NextAuth v5) with Google OAuth, JWT sessions, allowlist access control
+- **Database**: Postgres (Neon) via Prisma ORM with `@prisma/adapter-pg` driver
+- **Styling**: Tailwind CSS v4
+- **Validation**: Zod
+- **Testing**: Vitest + fast-check (property-based testing)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- A Postgres database (Neon free tier works great)
+- Google OAuth credentials
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up environment variables
+
+```bash
+cp .env.example .env
+```
+
+Fill in your `.env` with real values:
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Pooled Postgres connection string (used at runtime) |
+| `DIRECT_URL` | Non-pooled Postgres connection string (used for migrations) |
+| `AUTH_SECRET` | Random secret for signing JWTs — generate with `npx auth secret` |
+| `AUTH_GOOGLE_ID` | Google OAuth client ID |
+| `AUTH_GOOGLE_SECRET` | Google OAuth client secret |
+| `ALLOWED_EMAILS` | Comma-separated emails allowed to sign in |
+
+### 3. Set up Google OAuth
+
+1. Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+2. Create an OAuth 2.0 Client ID (Web application)
+3. Authorized JavaScript origin: `http://localhost:3000`
+4. Authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
+
+### 4. Run database migrations
+
+```bash
+npx prisma migrate dev
+```
+
+### 5. Start the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 — you'll be redirected to sign in with Google.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build (runs `prisma generate` first) |
+| `npm test` | Run test suite (vitest) |
+| `npm run lint` | Run ESLint |
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+- `src/proxy.ts` — Next.js 16 proxy (replaces middleware), handles auth gate
+- `src/lib/auth.config.ts` — Lightweight auth config (no DB deps, used by proxy)
+- `src/lib/auth.ts` — Full auth config with PrismaAdapter (used by route handlers & server actions)
+- `src/lib/actions.ts` — Server Actions for CRUD (all scoped to authenticated userId)
+- `src/lib/prisma.ts` — Prisma client singleton with `@prisma/adapter-pg` driver and `nameLower` extension
+- `src/lib/use-server-persisted-reducer.ts` — React hook replacing localStorage with server persistence
+- `src/lib/importer.ts` — One-time localStorage → Postgres import for existing users
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and fill in the values. See the example file for descriptions of each variable.
-
-Required variables:
-- `DATABASE_URL` — Pooled Postgres connection string (Neon)
-- `DIRECT_URL` — Non-pooled Postgres connection string (Neon)
-- `AUTH_SECRET` — Auth.js signing secret
-- `AUTH_GOOGLE_ID` — Google OAuth client ID
-- `AUTH_GOOGLE_SECRET` — Google OAuth client secret
-- `ALLOWED_EMAILS` — Comma-separated list of approved email addresses
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment (Vercel)
 
 ### Database Migrations
 
-Prisma Migrate must run against the non-pooled connection (`DIRECT_URL`), not the pooled `DATABASE_URL`. Neon's connection pooler does not support the advisory locks that Prisma Migrate requires.
-
-In your deploy script or CI pipeline:
+Prisma Migrate requires the non-pooled connection. In your deploy script:
 
 ```bash
 DATABASE_URL=$DIRECT_URL npx prisma migrate deploy
 ```
 
-### Environment Setup
+### Environment Variables
 
-Set all variables from `.env.example` in your Vercel project under Settings > Environment Variables. They are injected at deploy time.
+Set all variables from `.env.example` in Vercel under Settings → Environment Variables.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Access Control
+
+Only emails listed in `ALLOWED_EMAILS` can sign in. If the variable is empty or missing, all sign-in attempts are rejected.
