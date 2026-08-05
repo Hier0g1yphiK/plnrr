@@ -3,17 +3,7 @@
     {
       "name": "Default",
       "files": [
-        ".vscode/changelists.json",
-        "package-lock.json",
-        "src/proxy.ts",
-        "package.json",
-        "src/lib/prisma.ts",
-        "src/lib/auth.config.ts",
-        "src/lib/auth.ts",
-        "src/app/auth/signin/page.tsx",
-        "README.md",
-        ".gitignore",
-        ".kiro/steering/project.md"
+        "src/tests/properties/checklist.property.test.ts"
       ]
     }
   ],
